@@ -1,0 +1,70 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- Função para criar a BillboardGui para o contorno da cabeça do jogador
+local function createOutline(player)
+local character = player.Character
+if character and character:FindFirstChild("Head") then
+local head = character.Head
+
+-- Cria o BillboardGui como o outline
+local outlineGui = Instance.new("BillboardGui")
+outlineGui.Name = "OutlineGui"
+outlineGui.Adornee = head
+outlineGui.Size = UDim2.new(4, 0, 4, 0)  -- Aumenta o tamanho para criar um contorno
+outlineGui.StudsOffset = Vector3.new(0, 2, 0)
+outlineGui.AlwaysOnTop = true
+
+-- Cria o Frame dentro do BillboardGui para o contorno
+local outlineFrame = Instance.new("Frame")
+outlineFrame.Size = UDim2.new(1, 0, 1, 0)
+outlineFrame.BackgroundTransparency = 1
+outlineFrame.BorderSizePixel = 2
+outlineFrame.BorderColor3 = Color3.new(1, 0, 0)
+
+outlineFrame.Parent = outlineGui
+outlineGui.Parent = head
+end
+end
+
+-- Função para limpar os outlines anteriores
+local function clearOutlines()
+for _, player in ipairs(Players:GetPlayers()) do
+if player ~= LocalPlayer and player.Character then
+for _, gui in ipairs(player.Character:GetChildren()) do
+if gui:IsA("BillboardGui") and gui.Name == "OutlineGui" then
+gui:Destroy()
+end
+end
+end
+end
+end
+
+-- Função para criar outlines para todos os jogadores
+local function createOutlines()
+clearOutlines()
+for _, player in ipairs(Players:GetPlayers()) do
+if player ~= LocalPlayer then
+createOutline(player)
+end
+end
+end
+
+-- Atualiza as outlines a cada frame
+RunService.RenderStepped:Connect(function()
+createOutlines()
+end)
+
+-- Conecta eventos para novos jogadores e personagens
+Players.PlayerAdded:Connect(function(player)
+player.CharacterAdded:Connect(function(character)
+wait(1)  -- Aguarda o personagem carregar completamente
+createOutline(player)
+end)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+clearOutlines()
+end)
